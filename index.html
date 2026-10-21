@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eAI • Tutor Matemático & Portal Docente</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            surface: {
+              dark: '#0a0c12',
+              card: '#111520',
+              border: '#1a2234',
+              hover: '#161c2c'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- KaTeX for pristine math typesetting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#0a0c12] text-slate-100 h-screen w-screen flex antialiased selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden">
+
+  <!-- Mobile Backdrop Overlay -->
+  <div id="sidebarBackdrop" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden transition-opacity"></div>
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-80 -translate-x-full lg:translate-x-0 border-r border-[#1a2030] bg-[#0d1017] lg:bg-[#0d1017]/95 backdrop-blur-2xl flex flex-col justify-between transition-transform duration-300 z-40 shrink-0 h-full">
+    <div class="p-4 flex flex-col h-full overflow-hidden">
+      
+      <!-- Brand Logo con nuevo diseño 'eAI' -->
+      <div class="flex items-center justify-between pb-4 border-b border-[#1a2030] shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-emerald-400 p-[1.5px] shadow-lg shadow-indigo-500/25 group">
+            <div class="w-full h-full bg-[#0a0c12] rounded-[10px] flex items-center justify-center relative overflow-hidden">
+              <span class="font-serif italic font-bold text-xl text-emerald-400 leading-none mr-0.5">e</span>
+              <span class="font-sans font-black text-xs tracking-tighter text-indigo-400 leading-none">AI</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+          <div>
+            <h1 class="font-bold tracking-tight text-white text-sm flex items-center gap-1.5">
+              <span>e<strong class="text-indigo-400 font-extrabold">AI</strong></span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">Math</span>
+            </h1>
+            <p class="text-[10px] text-slate-400">Spivak &bull; Stewart &bull; OMA</p>
+          </div>
+        </div>
+        <button id="btnNewChat" title="Iniciar Nuevo Chat" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 transition-all text-xs font-medium">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Nuevo</span>
+        </button>
+      </div>
+
+      <!-- Scrollable Sidebar Content -->
+      <div class="flex-1 overflow-y-auto py-3 space-y-4 custom-scrollbar pr-1">
+        
+        <!-- Acceso rápido a Portal Docente -->
+        <button id="btnOpenTeacherPortal" class="w-full p-2.5 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent text-left hover:border-amber-500/50 transition-all group flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300">
+              <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-amber-200">Portal Docente</p>
+              <p class="text-[10px] text-amber-400/80">Exámenes &bull; Clases &bull; Guías</p>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 transition-transform"></i>
+        </button>
+
+        <!-- Historial de Chats del Usuario -->
+        <div>
+          <div class="flex items-center justify-between mb-2 px-1">
+            <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="history" class="w-3 h-3 text-indigo-400"></i>
+              Historial de Consultas
+            </label>
+            <span class="text-[10px] text-slate-500" id="chatCountBadge">0 chats</span>
+          </div>
+          <div id="chatHistoryList" class="space-y-1">
+            <div class="p-2 text-[11px] text-slate-500 text-center">Cargando historial...</div>
+          </div>
+        </div>
+
+        <!-- Enfoques de Aprendizaje -->
+        <div>
+          <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2 px-1">
+            Enfoque de Explicación
+          </label>
+          <div class="grid grid-cols-1 gap-1.5" id="modeSelector">
+            <button data-mode="apples" class="mode-card active p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 text-left relative overflow-hidden group">
+              <div class="flex items-center gap-1.5 text-emerald-400 font-semibold text-xs mb-0.5">
+                <span>🍎</span> Con Peras y Manzanas
+              </div>
+              <p class="text-[10.5px] text-slate-300 leading-snug">
+                Metáforas cotidianas para entender la idea intuitiva antes del cálculo.
+              </p>
+            </button>
+            
+            <button data-mode="socratic" class="mode-card p-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-left relative overflow-hidden group hover:border-slate-700">
+              <div class="flex items-center gap-1.5 text-indigo-400 font-semibold text-xs mb-0.5">
+                <i data-lucide="book-open" class="w-3 h-3"></i> Paso a Paso Riguroso
+              </div>
+              <p class="text-[10.5px] text-slate-400 leading-snug">
+                Formalismo Spivak / Stewart con teoremas, hipótesis y cada paso justificado.
+              </p>
+            </button>
+
+            <button data-mode="oma" class="mode-card p-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-left relative overflow-hidden group hover:border-slate-700">
+              <div class="flex items-center gap-1.5 text-amber-400 font-semibold text-xs mb-0.5">
+                <i data-lucide="trophy" class="w-3 h-3"></i> Razonamiento OMA
+              </div>
+              <p class="text-[10.5px] text-slate-400 leading-snug">
+                Trucos olímpicos: Casillas de Dirichlet, Paridad, Invariantes y Extremos.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cerebro Base Incorporado -->
+        <div class="p-2.5 rounded-xl border border-indigo-500/20 bg-indigo-950/20 text-xs">
+          <div class="flex items-center gap-1.5 text-indigo-300 font-semibold text-[11px] mb-1">
+            <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <span>Cerebro Base de eAI</span>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Spivak, Stewart y heurísticas OMA ya residen integrados de forma nativa en el razonamiento del modelo.
+          </p>
+        </div>
+
+        <!-- Fuentes y Apuntes del Alumno -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Mis Apuntes &amp; Guías
+            </label>
+            <span class="text-[10px] text-emerald-400" id="studentSourceCount">0 archivos</span>
+          </div>
+          <div id="studentSourcesList" class="space-y-1.5">
+            <div class="p-2 text-[11px] text-slate-500 text-center border border-dashed border-slate-800 rounded-lg">
+              No has subido ningún apunte aún.
+            </div>
+          </div>
+          <button id="btnUploadSim" class="w-full mt-2 py-1.5 px-2 rounded-lg border border-dashed border-slate-700 hover:border-indigo-500/50 text-[11px] text-slate-400 hover:text-indigo-300 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="upload" class="w-3 h-3"></i> Subir apunte o programa PDF
+          </button>
+        </div>
+
+      </div>
+
+      <!-- User footer & Auth -->
+      <div class="pt-3 border-t border-[#1a2030] flex items-center justify-between shrink-0">
+        <button id="btnOpenAuthModal" class="flex items-center gap-2.5 hover:opacity-80 transition-opacity text-left">
+          <div id="userAvatar" class="w-7 h-7 rounded-full bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-xs font-semibold text-indigo-300">
+            EM
+          </div>
+          <div>
+            <p id="userNameDisplay" class="text-xs font-medium text-slate-200">Invitado / Estudiante</p>
+            <p id="userRoleDisplay" class="text-[10px] text-slate-400">Clic para Iniciar Sesión</p>
+          </div>
+        </button>
+        <button id="btnSettings" title="Configuración de IA" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CHAT & TOOLBAR CONTAINER ==================== -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#0a0c12] relative">
+    
+    <!-- Top Navigation Bar -->
+    <header class="h-14 border-b border-[#181e2e] px-6 flex items-center justify-between bg-[#0a0c12]/90 backdrop-blur-xl z-20 shrink-0">
+      <div class="flex items-center gap-3">
+        <button id="btnToggleSidebar" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors lg:hidden">
+          <i data-lucide="panel-left" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <span class="text-xs font-medium text-slate-300" id="headerContextLabel">
+            Modo: <strong class="text-emerald-400">Peras y Manzanas</strong>
+          </span>
+        </div>
+      </div>
+
+      <!-- Header actions -->
+      <div class="flex items-center gap-2">
+        <button id="btnQuickTeacherNav" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-medium transition-all shadow-sm">
+          <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i>
+          <span>Crear Examen / Clase</span>
+        </button>
+        <button id="btnToggleCalc" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-xs font-medium transition-all shadow-sm">
+          <i data-lucide="calculator" class="w-3.5 h-3.5 text-indigo-400"></i>
+          <span>Calcu Científica</span>
+        </button>
+        <button id="btnToggleGraph" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition-all shadow-sm">
+          <i data-lucide="line-chart" class="w-3.5 h-3.5"></i>
+          <span>Pizarra Gráfica</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== CALCULADORA GRÁFICA TIPO GEOGEBRA ==================== -->
+    <section id="graphDrawer" class="hidden border-b border-[#1a2236] bg-[#0c101a] p-3 transition-all duration-300 shadow-2xl relative z-10 shrink-0">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800/60">
+        <div class="flex items-center gap-2 flex-1 min-w-[260px]">
+          <span class="text-xs font-mono font-bold text-indigo-400">f(x) =</span>
+          <div class="relative flex-1">
+            <input 
+              type="text" 
+              id="graphInputExpr" 
+              value="(x^2 - 1)/(1 - x^2)" 
+              placeholder="Ej: (x^2 - 1)/(1 - x^2), sin(x)/x, x^2 - 4..."
+              class="w-full bg-[#111624] border border-[#21293f] rounded-lg px-3 py-1 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <button id="btnPlotCustom" class="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-sm">
+            Graficar
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5">
+          <span class="text-[10px] text-slate-500 font-medium">Ejemplos:</span>
+          <button class="preset-btn px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-expr="(x^2 - 1)/(1 - x^2)">(x²-1)/(1-x²)</button>
+          <button class="preset-btn px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-expr="sin(x)/x">sin(x)/x</button>
+          <button class="preset-btn px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-expr="x^3 - 3*x">x³ - 3x</button>
+          <button class="preset-btn px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-expr="1/x">1/x</button>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <button id="btnZoomIn" title="Acercar (+)" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold w-6 h-6 flex items-center justify-center">+</button>
+          <button id="btnZoomOut" title="Alejar (-)" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold w-6 h-6 flex items-center justify-center">-</button>
+          <button id="btnResetView" title="Restablecer Origen" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">Origen</button>
+          <button id="btnCloseGraph" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 ml-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full h-52 bg-[#06080e] rounded-xl border border-[#1a2030] relative overflow-hidden select-none">
+        <canvas id="mathCanvas" class="w-full h-full block"></canvas>
+        <div id="graphCoordinates" class="absolute bottom-2 left-3 px-2 py-0.5 rounded bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-indigo-300 pointer-events-none">
+          x: 0.00 | y: 0.00
+        </div>
+      </div>
+    </section>
+
+    <!-- Chat Messages Scroll Area -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto px-4 md:px-12 lg:px-24 py-6 space-y-6 custom-scrollbar">
+      
+      <!-- Welcome Hero Banner -->
+      <div id="welcomeHero" class="max-w-2xl mx-auto my-4 text-center space-y-4 animate-fade-in">
+        <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-xl shadow-indigo-500/5 mb-1">
+          <i data-lucide="sparkles" class="w-6 h-6 text-indigo-400"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
+          Aprende matemática de verdad.<br/>
+          <span class="bg-gradient-to-r from-emerald-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
+            El rigor de Spivak y Stewart con intuición humana.
+          </span>
+        </h2>
+        <p class="text-xs md:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
+          Explicamos cualquier teorema <strong class="text-emerald-300">con peras y manzanas</strong>, resolvemos detallando cada paso y ayudamos a los docentes a planificar clases y exámenes.
+        </p>
+
+        <!-- Quick Starter Prompts -->
+        <div class="pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left max-w-xl mx-auto">
+          <button class="quick-prompt p-3 rounded-xl border border-[#1b2234] bg-[#101420]/80 hover:bg-[#161c2d] hover:border-indigo-500/40 transition-all text-xs text-slate-300 group">
+            <div class="font-medium text-indigo-400 mb-0.5 flex items-center justify-between">
+              <span>🎯 Límite con Indeterminación</span>
+              <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            </div>
+            <p class="text-[11px] text-slate-400">resolveme el limite de x cuando tiende a 1 de x cuadrado -1 sobre 1- x cuadrado</p>
+          </button>
+
+          <button class="quick-prompt p-3 rounded-xl border border-[#1b2234] bg-[#101420]/80 hover:bg-[#161c2d] hover:border-emerald-500/40 transition-all text-xs text-slate-300 group">
+            <div class="font-medium text-emerald-400 mb-0.5 flex items-center justify-between">
+              <span>📈 ¿Qué es la Derivada?</span>
+              <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            </div>
+            <p class="text-[11px] text-slate-400">"Explicame la derivada con peras y manzanas sin fórmulas raras"</p>
+          </button>
+
+          <button class="quick-prompt p-3 rounded-xl border border-[#1b2234] bg-[#101420]/80 hover:bg-[#161c2d] hover:border-sky-500/40 transition-all text-xs text-slate-300 group">
+            <div class="font-medium text-sky-400 mb-0.5 flex items-center justify-between">
+              <span>∫ ¿Qué es la Integral de Riemann?</span>
+              <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            </div>
+            <p class="text-[11px] text-slate-400">"¿Por qué integrar es el área y a la vez lo opuesto a derivar?"</p>
+          </button>
+
+          <button class="quick-prompt p-3 rounded-xl border border-[#1b2234] bg-[#101420]/80 hover:bg-[#161c2d] hover:border-amber-500/40 transition-all text-xs text-slate-300 group">
+            <div class="font-medium text-amber-400 mb-0.5 flex items-center justify-between">
+              <span>🏆 Desafío OMA (Palomar)</span>
+              <i data-lucide="arrow-right" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            </div>
+            <p class="text-[11px] text-slate-400">"Dame un problema de olimpiada para pensar con ingenio"</p>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== CALCULADORA CIENTÍFICA VIRTUAL (VISUAL CON KATEX) ==================== -->
+    <div id="scientificKeyboard" class="hidden border-t border-[#1a2236] bg-[#0c101a] px-4 md:px-12 lg:px-24 py-3 shrink-0 transition-all duration-300">
+      <div class="max-w-3xl mx-auto space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-400 pb-1 border-b border-slate-800">
+          <span class="font-medium flex items-center gap-1.5 text-indigo-300">
+            <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+            Calculadora Científica Visual &bull; Clic para insertar fórmula matemática
+          </span>
+          <button id="btnCloseCalc" class="hover:text-white p-0.5">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Categorías de botones con KaTeX renderizado visualmente -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <!-- Límites y Cálculo -->
+          <div class="bg-[#121624] p-2 rounded-xl border border-[#1d263b] space-y-1.5">
+            <div class="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">Cálculo &amp; Límites</div>
+            <div class="grid grid-cols-2 gap-1.5 font-mono">
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\lim_{x \to 0} ">
+                <span class="math-render">\lim_{x \to 0}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\lim_{x \to 1} ">
+                <span class="math-render">\lim_{x \to 1}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\lim_{x \to \infty} ">
+                <span class="math-render">\lim_{x \to \infty}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\frac{df}{dx} ">
+                <span class="math-render">\frac{df}{dx}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\int ">
+                <span class="math-render">\int</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\int_{a}^{b} ">
+                <span class="math-render">\int_{a}^{b}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Álgebra & Fracciones -->
+          <div class="bg-[#121624] p-2 rounded-xl border border-[#1d263b] space-y-1.5">
+            <div class="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Álgebra &amp; Fracción</div>
+            <div class="grid grid-cols-2 gap-1.5 font-mono">
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\frac{a}{b} ">
+                <span class="math-render">\frac{a}{b}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="x^2 ">
+                <span class="math-render">x^2</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="x^n ">
+                <span class="math-render">x^n</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\sqrt{x} ">
+                <span class="math-render">\sqrt{x}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\sqrt[n]{x} ">
+                <span class="math-render">\sqrt[n]{x}</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="|x| ">
+                <span class="math-render">|x|</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Funciones -->
+          <div class="bg-[#121624] p-2 rounded-xl border border-[#1d263b] space-y-1.5">
+            <div class="text-[10px] font-semibold text-sky-400 uppercase tracking-wider">Funciones</div>
+            <div class="grid grid-cols-2 gap-1.5 font-mono">
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\sin(x) ">
+                <span class="math-render">\sin(x)</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\cos(x) ">
+                <span class="math-render">\cos(x)</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\tan(x) ">
+                <span class="math-render">\tan(x)</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\ln(x) ">
+                <span class="math-render">\ln(x)</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="e^x ">
+                <span class="math-render">e^x</span>
+              </button>
+              <button class="calc-key p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\log(x) ">
+                <span class="math-render">\log(x)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Símbolos & Conjuntos -->
+          <div class="bg-[#121624] p-2 rounded-xl border border-[#1d263b] space-y-1.5">
+            <div class="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">Símbolos &amp; OMA</div>
+            <div class="grid grid-cols-3 gap-1 font-mono">
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\infty ">
+                <span class="math-render">\infty</span>
+              </button>
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\pi ">
+                <span class="math-render">\pi</span>
+              </button>
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\pm ">
+                <span class="math-render">\pm</span>
+              </button>
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\le ">
+                <span class="math-render">\le</span>
+              </button>
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\ge ">
+                <span class="math-render">\ge</span>
+              </button>
+              <button class="calc-key p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center" data-insert="\in \mathbb{R} ">
+                <span class="math-render">\in \mathbb{R}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Input Container -->
+    <div class="p-4 md:px-12 lg:px-24 border-t border-[#181e2e] bg-[#0a0c12]/95 backdrop-blur-xl shrink-0">
+      <div class="max-w-3xl mx-auto">
+        
+        <!-- Pedagogical Mode Pills on Top of Input -->
+        <div class="flex items-center justify-between mb-2 px-1">
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-400">Modo:</span>
+            <div id="activeModeBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+              <span>🍎</span> Peras y Manzanas
+            </div>
+            <button id="btnCycleMode" class="text-[10px] text-indigo-400 hover:text-indigo-300 underline font-medium">
+              Cambiar
+            </button>
+          </div>
+          
+          <div class="flex items-center gap-3 text-[11px] text-slate-400">
+            <span class="text-xs text-indigo-300 font-medium">🧠 Spivak • Stewart • OMA incorporados</span>
+          </div>
+        </div>
+
+        <!-- Chat Input Field -->
+        <form id="chatForm" class="relative rounded-2xl bg-[#111520] border border-[#1e2538] focus-within:border-indigo-500/60 transition-all shadow-xl shadow-black/40">
+          <div class="p-3">
+            <textarea 
+              id="chatInput" 
+              rows="2" 
+              placeholder="Pregunta un teorema, escribe un límite, derivada o problema OMA..."
+              class="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none custom-scrollbar"
+            ></textarea>
+
+            <!-- VISTA PREVIA MATEMÁTICA EN VIVO CON KATEX -->
+            <div id="formulaPreviewContainer" class="hidden mt-2 p-2 rounded-xl bg-[#090c14] border border-indigo-500/30 flex items-center justify-between animate-fade-in">
+              <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar py-0.5 pr-2">
+                <span class="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider shrink-0">Vista previa:</span>
+                <span id="formulaPreviewMath" class="text-sm text-white"></span>
+              </div>
+              <button type="button" id="btnSendToGrapher" class="shrink-0 px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-[10px] font-medium flex items-center gap-1 transition-colors">
+                <i data-lucide="line-chart" class="w-3 h-3"></i>
+                <span>Enviar a Graficadora</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="px-3 pb-2.5 flex items-center justify-between border-t border-[#1a2030] pt-2">
+            <!-- Left action buttons -->
+            <div class="flex items-center gap-1">
+              <button type="button" id="btnToggleCalcInInput" title="Abrir Calculadora Científica" class="p-1.5 rounded-lg text-indigo-400 hover:bg-indigo-500/10 transition-colors flex items-center gap-1 text-xs font-medium">
+                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Calcu</span>
+              </button>
+              <button type="button" id="btnOpenGraphQuick" title="Abrir Pizarra Gráfica" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1 text-xs">
+                <i data-lucide="line-chart" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Gráfica</span>
+              </button>
+            </div>
+
+            <!-- Right submit button -->
+            <div class="flex items-center gap-2">
+              <button 
+                type="submit" 
+                id="btnSend"
+                class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Preguntar</span>
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <p class="text-[11px] text-center text-slate-500 mt-2">
+          eAI &bull; Traduciendo el rigor de Spivak y Stewart a explicaciones humanas.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== MODAL: PORTAL DOCENTE (EXÁMENES & CLASES) ==================== -->
+  <div id="teacherModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-[#111522] border border-[#232c44] rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative animate-scale-up flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between pb-4 border-b border-[#1f2638] shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Portal de Docentes y Cátedras</h3>
+            <p class="text-[11px] text-slate-400">Genera modelos de examen, planificaciones de clase y guías prácticas con IA.</p>
+          </div>
+        </div>
+        <button id="btnCloseTeacherModal" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
+        <div class="grid grid-cols-3 gap-2">
+          <button data-cat="exam" class="teacher-cat-btn active p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-left transition-all">
+            <i data-lucide="file-check" class="w-4 h-4 text-amber-400 mb-1"></i>
+            <div class="font-semibold text-xs text-white">Modelo de Examen</div>
+            <p class="text-[10px] text-slate-400">Con rúbrica y puntajes</p>
+          </button>
+          <button data-cat="lesson_plan" class="teacher-cat-btn p-3 rounded-xl border border-slate-800 bg-slate-900/40 text-left transition-all hover:border-slate-700">
+            <i data-lucide="calendar" class="w-4 h-4 text-indigo-400 mb-1"></i>
+            <div class="font-semibold text-xs text-white">Planificación de Clase</div>
+            <p class="text-[10px] text-slate-400">Secuencia didáctica 90m</p>
+          </button>
+          <button data-cat="task" class="teacher-cat-btn p-3 rounded-xl border border-slate-800 bg-slate-900/40 text-left transition-all hover:border-slate-700">
+            <i data-lucide="list-todo" class="w-4 h-4 text-emerald-400 mb-1"></i>
+            <div class="font-semibold text-xs text-white">Guía de Tareas / OMA</div>
+            <p class="text-[10px] text-slate-400">Ejercicios graduados</p>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tema Principal</label>
+            <input type="text" id="teacherTopicInput" value="Límites, Continuidad y Teorema de Bolzano" placeholder="Ej: Derivadas y Recta Tangente..." class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nivel Educativo</label>
+            <select id="teacherLevelSelect" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="CBC / Ingreso Universitario">CBC / Ingreso Universitario</option>
+              <option value="Análisis Matemático I (Universidad)">Análisis Matemático I (Universidad)</option>
+              <option value="Secundaria Superior (Polimodal/Técnica)">Secundaria Superior</option>
+              <option value="Entrenamiento OMA (Niveles 1, 2, 3)">Entrenamiento OMA</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="btnGenerateTeacherMaterial" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition-all">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Generar Material con eAI</span>
+        </button>
+
+        <div id="teacherOutputContainer" class="hidden mt-3 p-4 rounded-xl bg-[#0a0d15] border border-[#1e263c] space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <span class="text-xs font-bold text-amber-300" id="teacherOutputTitle">Material Generado</span>
+            <button id="btnCopyTeacherOutput" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar
+            </button>
+          </div>
+          <div id="teacherOutputContent" class="text-xs text-slate-200 leading-relaxed font-sans max-h-60 overflow-y-auto custom-scrollbar whitespace-pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: AUTENTICACIÓN ==================== -->
+  <div id="authModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-[#111520] border border-[#1f2638] rounded-2xl w-full max-w-sm p-6 shadow-2xl relative animate-scale-up">
+      <div class="flex items-center justify-between pb-4 border-b border-[#1f2638]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="user-circle" class="w-5 h-5 text-indigo-400"></i>
+          <h3 class="font-semibold text-white text-sm" id="authModalTitle">Iniciar Sesión en eAI</h3>
+        </div>
+        <button id="btnCloseAuthModal" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="authForm" class="py-4 space-y-3">
+        <div id="authNameGroup" class="hidden">
+          <label class="block text-xs font-medium text-slate-300 mb-1">Nombre Completo</label>
+          <input type="text" id="authInputName" placeholder="Prof. García o Estudiante" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div id="authRoleGroup" class="hidden">
+          <label class="block text-xs font-medium text-slate-300 mb-1">Rol de Cuenta</label>
+          <select id="authSelectRole" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="student">Estudiante (Consultas, Explicaciones, OMA)</option>
+            <option value="teacher">Docente / Cátedra (Exámenes, Planificaciones)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
+          <input type="email" id="authInputEmail" required placeholder="profesor@colegio.edu o alumno@gmail.com" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
+          <input type="password" id="authInputPassword" required placeholder="••••••••" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" id="btnSubmitAuth" class="w-full mt-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors shadow-md shadow-indigo-600/30">
+          Entrar a mi cuenta
+        </button>
+
+        <div class="text-center pt-2">
+          <button type="button" id="btnToggleAuthMode" class="text-[11px] text-indigo-400 hover:underline">
+            ¿No tienes cuenta? Regístrate aquí
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONFIGURACIÓN ==================== -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-[#111520] border border-[#1f2638] rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-scale-up">
+      <div class="flex items-center justify-between pb-4 border-b border-[#1f2638]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-indigo-400"></i>
+          <h3 class="font-semibold text-white text-sm">Configuración de eAI</h3>
+        </div>
+        <button id="btnCloseSettings" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Motor de Inteligencia</label>
+          <select id="selectModel" class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="simulated">Motor Pedagógico Spivak / Stewart (Servidor Local)</option>
+            <option value="gemini-flash">Google Gemini 1.5 Flash (API Oficial)</option>
+            <option value="gemini-pro">Google Gemini 1.5 Pro (Razonamiento Complejo)</option>
+          </select>
+        </div>
+
+        <div id="apiKeyGroup" class="hidden">
+          <label class="block text-xs font-medium text-slate-300 mb-1">Gemini API Key</label>
+          <input type="password" id="inputApiKey" placeholder="AIzaSy..." class="w-full rounded-xl bg-[#0a0d15] border border-[#20273a] px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+          <p class="text-[10px] text-slate-400 mt-1">La clave se envía de forma segura a través del backend.</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[#1f2638] flex justify-end gap-2">
+        <button id="btnSaveSettings" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>

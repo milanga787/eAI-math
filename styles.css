@@ -1,0 +1,237 @@
+/* Custom CSS for EulerAI Minimalist Math Tutor & GeoGebra-style Plotter */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom sleek scrollbar for ALL scrollable containers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  transition: background 0.3s var(--ease-smooth);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.custom-scrollbar {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+/* Smooth keyframes */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.96); }
+}
+
+.animate-fade-in {
+  animation: fadeInSlideUp 0.35s var(--ease-smooth) forwards;
+}
+
+.animate-scale-up {
+  animation: modalScale 0.28s var(--ease-smooth) forwards;
+}
+
+/* Smooth Transitions for Interactive Elements */
+button, input, select, textarea, .mode-card, .level-btn, .quick-prompt {
+  transition: all 0.24s var(--ease-smooth);
+}
+
+/* Level Button active styles */
+.level-btn {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+}
+
+.level-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  transform: translateX(3px);
+}
+
+.level-btn.active {
+  background-color: rgba(30, 41, 59, 0.85);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transform: translateX(3px);
+}
+
+/* Mode card transitions */
+.mode-card {
+  transition: all 0.28s var(--ease-smooth);
+  cursor: pointer;
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-card.active {
+  transform: translateY(-2px);
+}
+
+.mode-card[data-mode="apples"].active {
+  border-color: rgba(52, 211, 153, 0.6);
+  background-color: rgba(6, 78, 59, 0.3);
+  box-shadow: 0 4px 20px -2px rgba(52, 211, 153, 0.18);
+}
+
+.mode-card[data-mode="socratic"].active {
+  border-color: rgba(99, 102, 241, 0.6);
+  background-color: rgba(49, 46, 129, 0.3);
+  box-shadow: 0 4px 20px -2px rgba(99, 102, 241, 0.18);
+}
+
+.mode-card[data-mode="oma"].active {
+  border-color: rgba(251, 191, 36, 0.6);
+  background-color: rgba(120, 53, 15, 0.3);
+  box-shadow: 0 4px 20px -2px rgba(251, 191, 36, 0.18);
+}
+
+/* Message Bubble Styles */
+.message-bubble-user {
+  background: #171d2e;
+  border: 1px solid #242e47;
+  border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.message-bubble-ai {
+  background: #101420;
+  border: 1px solid #1c2438;
+  border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* KaTeX custom dark rendering */
+.katex {
+  color: #f1f5f9 !important;
+  font-size: 1.08em;
+}
+
+.katex-display {
+  margin: 1.2rem 0 !important;
+  padding: 0.9rem 1.2rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.85rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Step-by-Step Card Styles */
+.step-card {
+  position: relative;
+  border-left: 2px solid #6366f1;
+  background: rgba(30, 41, 59, 0.35);
+  border-radius: 0 0.85rem 0.85rem 0;
+  padding: 0.85rem 1.1rem;
+  margin: 0.85rem 0;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.step-card:hover {
+  background: rgba(30, 41, 59, 0.55);
+  border-left-color: #818cf8;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 9999px;
+  background: #4f46e5;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 0.45rem;
+}
+
+/* Peras & Manzanas Callout */
+.analogy-callout {
+  border-left: 3px solid #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  padding: 0.9rem 1.1rem;
+  border-radius: 0 0.85rem 0.85rem 0;
+  margin: 0.85rem 0;
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+  border-right: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* OMA Heuristic Box */
+.oma-box {
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: radial-gradient(circle at top left, rgba(251, 191, 36, 0.1), transparent 70%);
+  border-radius: 0.85rem;
+  padding: 1rem 1.2rem;
+  margin: 0.85rem 0;
+}
+
+/* Solution Box */
+.solution-box {
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.06);
+  border-radius: 0.85rem;
+  padding: 1rem 1.2rem;
+  margin: 0.85rem 0;
+}
+
+/* Graph Calculator canvas styling */
+#mathCanvas {
+  cursor: crosshair;
+  background-color: #07090e;
+}
